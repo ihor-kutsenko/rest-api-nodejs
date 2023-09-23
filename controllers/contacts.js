@@ -1,28 +1,14 @@
-// const Joi = require("joi");
-
-const contacts = require("../models/contacts");
+const { Contact } = require("../models/contact");
 const { HttpError, ctrlWrapper } = require("../helpers");
 
-// const addSchema = Joi.object({
-//   name: Joi.string().required().messages({
-//     "any.required": "missing required name field",
-//   }),
-//   phone: Joi.string().required().messages({
-//     "any.required": "missing required phone field",
-//   }),
-//   email: Joi.string().required().messages({
-//     "any.required": "missing required email field",
-//   }),
-// });
-
 const getAll = async (req, res) => {
-  const result = await contacts.listContacts();
+  const result = await Contact.find();
   res.json(result);
 };
 
 const getById = async (req, res) => {
   const { contactId } = req.params;
-  const result = await contacts.getContactById(contactId);
+  const result = await Contact.findById(contactId);
 
   if (!result) {
     throw HttpError(404, "Not found");
@@ -32,13 +18,26 @@ const getById = async (req, res) => {
 };
 
 const add = async (req, res) => {
-  const result = await contacts.addContact(req.body);
+  const result = await Contact.create(req.body);
   res.status(201).json(result);
 };
 
 const updateById = async (req, res) => {
   const { contactId } = req.params;
-  const result = await contacts.updateContact(contactId, req.body);
+  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+    new: true,
+  });
+  if (!result) {
+    throw HttpError(404, "Not Found");
+  }
+  res.json(result);
+};
+
+const updateStatusContact = async (req, res) => {
+  const { contactId } = req.params;
+  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+    new: true,
+  });
   if (!result) {
     throw HttpError(404, "Not Found");
   }
@@ -47,7 +46,7 @@ const updateById = async (req, res) => {
 
 const deleteById = async (req, res) => {
   const { contactId } = req.params;
-  const result = await contacts.removeContact(contactId);
+  const result = await Contact.findByIdAndDelete(contactId);
   if (!result) {
     throw HttpError(404, "Not Found");
   }
@@ -60,5 +59,6 @@ module.exports = {
   getById: ctrlWrapper(getById),
   add: ctrlWrapper(add),
   updateById: ctrlWrapper(updateById),
+  updateStatusContact: ctrlWrapper(updateStatusContact),
   deleteById: ctrlWrapper(deleteById),
 };
