@@ -2,7 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const { User } = require("../models/user");
-const { HttpError, ctrlWrapper } = require("../helpers");
+const { HttpError } = require("../helpers");
+const { ctrlWrapper } = require("../decorators");
 
 const { SECRET_KEY } = process.env;
 
@@ -22,9 +23,10 @@ const register = async (req, res) => {
   });
 
   res.status(201).json({
-    email: newUser.email,
-    name: newUser.name,
-    subscription: newUser.subscription,
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
   });
 };
 
@@ -53,18 +55,16 @@ const login = async (req, res) => {
 };
 
 const getCurrent = async (req, res) => {
-  const { name, email, subscription } = req.user;
+  const { email, subscription } = req.user;
 
-  res.json({ name, email, subscription });
+  res.json({ email, subscription });
 };
 
 const logout = async (req, res) => {
   const { _id } = req.user;
   await User.findByIdAndUpdate(_id, { token: "" });
 
-  res.status(204).json({
-    message: "Logout success",
-  });
+  res.status(204).json();
 };
 
 const updateSubscription = async (req, res) => {

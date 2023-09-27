@@ -1,23 +1,21 @@
 const { Contact } = require("../models/contact");
-const { HttpError, ctrlWrapper } = require("../helpers");
+const { HttpError } = require("../helpers");
+const { ctrlWrapper } = require("../decorators");
 
 const getAll = async (req, res) => {
   const { _id: owner } = req.user;
   const { page = 1, limit = 20, favorite } = req.query;
   const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
-    skip,
-    limit,
-  }).populate("owner", " name email subscription");
+  const result = await Contact.find(
+    favorite ? { owner, favorite } : { owner },
+    "-createdAt -updatedAt",
+    {
+      skip,
+      limit,
+    }
+  ).populate("owner", " name email subscription");
 
-  if (favorite) {
-    const filteredResult = result.filter((item) => {
-      return item.favorite === Boolean(favorite);
-    });
-    res.json(filteredResult);
-  } else {
-    res.json(result);
-  }
+  res.json(result);
 };
 
 const getById = async (req, res) => {
